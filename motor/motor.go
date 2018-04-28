@@ -103,7 +103,7 @@ func (controller *Controller) goToAxis(target int32, current int32, incFunc, dec
 	case steps < 0:
 		return decFunc(steps)
 	}
-	return fmt.Errorf("unable to decide how to walk %s steps", steps)
+	return fmt.Errorf("unable to decide how to walk %v steps", steps)
 }
 
 func (controller *Controller) Center() error {
