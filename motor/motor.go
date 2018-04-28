@@ -81,7 +81,7 @@ func NewController() (*Controller, error) {
 }
 
 func (controller *Controller) goTo(x, y int32) error {
-	status, err := controller.Status()
+	status, err := controller.status()
 	if err != nil {
 		return err
 	}
@@ -177,9 +177,13 @@ func (controller *Controller) Left(steps int32) error {
 	}
 	return controller.wait()
 }
+
 func (controller *Controller) Status() (Status, error) {
 	controller.calibration.Lock()
 	defer controller.calibration.Unlock()
+	return controller.status()
+}
+func (controller *Controller) status() (Status, error) {
 	status := Status{}
 	err := controller.sendCommand(GetStatusCommand, unsafe.Pointer(&status))
 	if err != nil {
@@ -188,7 +192,7 @@ func (controller *Controller) Status() (Status, error) {
 	return status, nil
 }
 func (controller *Controller) SetX(target int32) error {
-	status, err := controller.Status()
+	status, err := controller.status()
 	if err != nil {
 		return err
 	}
@@ -196,7 +200,7 @@ func (controller *Controller) SetX(target int32) error {
 
 }
 func (controller *Controller) SetY(target int32) error {
-	status, err := controller.Status()
+	status, err := controller.status()
 	if err != nil {
 		return err
 	}
@@ -204,12 +208,12 @@ func (controller *Controller) SetY(target int32) error {
 }
 
 func (controller *Controller) wait() error {
-	status, err := controller.Status()
+	status, err := controller.status()
 	if err != nil {
 		return err
 	}
 	for range time.Tick(200 * time.Millisecond) {
-		current, err := controller.Status()
+		current, err := controller.status()
 		if err != nil {
 			return err
 		}
@@ -244,7 +248,7 @@ func (controller *Controller) calibrateY() error {
 	var err error
 	controller.Down(5000)
 	for range time.Tick(1 * time.Second) {
-		status, err = controller.Status()
+		status, err = controller.status()
 		if err != nil {
 			return err
 		}
@@ -255,7 +259,7 @@ func (controller *Controller) calibrateY() error {
 	controller.Reset()
 	controller.Up(5000)
 	for range time.Tick(1 * time.Second) {
-		status, err = controller.Status()
+		status, err = controller.status()
 		if err != nil {
 			return err
 		}
@@ -266,7 +270,7 @@ func (controller *Controller) calibrateY() error {
 	max := status.YSteps
 	controller.Down(5000)
 	for range time.Tick(1 * time.Second) {
-		status, err = controller.Status()
+		status, err = controller.status()
 		if err != nil {
 			return err
 		}
@@ -284,7 +288,7 @@ func (controller *Controller) calibrateX() error {
 	var err error
 	controller.Left(5000)
 	for range time.Tick(1 * time.Second) {
-		status, err = controller.Status()
+		status, err = controller.status()
 		if err != nil {
 			return err
 		}
@@ -295,7 +299,7 @@ func (controller *Controller) calibrateX() error {
 	controller.Reset()
 	controller.Right(5000)
 	for range time.Tick(1 * time.Second) {
-		status, err = controller.Status()
+		status, err = controller.status()
 		if err != nil {
 			return err
 		}
@@ -306,7 +310,7 @@ func (controller *Controller) calibrateX() error {
 	controller.XAxis.max = status.XSteps
 	controller.Left(5000)
 	for range time.Tick(1 * time.Second) {
-		status, err = controller.Status()
+		status, err = controller.status()
 		if err != nil {
 			return err
 		}
