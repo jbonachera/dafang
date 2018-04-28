@@ -166,6 +166,22 @@ func (controller *Controller) Status() (Status, error) {
 	}
 	return status, nil
 }
+func (controller *Controller) SetX(target int32) error {
+	status, err := controller.Status()
+	if err != nil {
+		return err
+	}
+	return controller.goToAxis(target, status.XSteps, controller.Right, controller.Left)
+
+}
+func (controller *Controller) SetY(target int32) error {
+	status, err := controller.Status()
+	if err != nil {
+		return err
+	}
+	return controller.goToAxis(target, status.YSteps, controller.Up, controller.Down)
+}
+
 func (controller *Controller) wait() error {
 	status, err := controller.Status()
 	if err != nil {
