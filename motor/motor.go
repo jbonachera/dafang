@@ -54,12 +54,13 @@ func (c *ControllerAxis) Max() int32 {
 }
 
 type Controller struct {
-	sync.Mutex
-	fd         int
-	speed      uint32
-	calibrated time.Time
-	XAxis      ControllerAxis
-	YAxis      ControllerAxis
+	movement    sync.Mutex
+	calibration sync.Mutex
+	fd          int
+	speed       uint32
+	calibrated  time.Time
+	XAxis       ControllerAxis
+	YAxis       ControllerAxis
 }
 
 type Movement struct {
@@ -115,8 +116,8 @@ func (controller *Controller) Reset() error {
 	return controller.sendCommand(ResetCommand, unsafe.Pointer(nil))
 }
 func (controller *Controller) Up(steps int32) error {
-	controller.Lock()
-	defer controller.Unlock()
+	controller.movement.Lock()
+	defer controller.movement.Unlock()
 	mov := Movement{
 		Direction: UpDirection,
 		Speed:     controller.speed,
@@ -130,8 +131,8 @@ func (controller *Controller) Up(steps int32) error {
 }
 
 func (controller *Controller) Down(steps int32) error {
-	controller.Lock()
-	defer controller.Unlock()
+	controller.movement.Lock()
+	defer controller.movement.Unlock()
 
 	mov := Movement{
 		Direction: DownDirection,
@@ -146,8 +147,8 @@ func (controller *Controller) Down(steps int32) error {
 }
 
 func (controller *Controller) Right(steps int32) error {
-	controller.Lock()
-	defer controller.Unlock()
+	controller.movement.Lock()
+	defer controller.movement.Unlock()
 
 	mov := Movement{
 		Direction: RightDirection,
@@ -162,8 +163,8 @@ func (controller *Controller) Right(steps int32) error {
 }
 
 func (controller *Controller) Left(steps int32) error {
-	controller.Lock()
-	defer controller.Unlock()
+	controller.movement.Lock()
+	defer controller.movement.Unlock()
 
 	mov := Movement{
 		Direction: LeftDirection,
@@ -177,6 +178,8 @@ func (controller *Controller) Left(steps int32) error {
 	return controller.wait()
 }
 func (controller *Controller) Status() (Status, error) {
+	controller.calibration.Lock()
+	defer controller.calibration.Unlock()
 	status := Status{}
 	err := controller.sendCommand(GetStatusCommand, unsafe.Pointer(&status))
 	if err != nil {
@@ -222,6 +225,8 @@ func (controller *Controller) Speed(speed int32) error {
 	return controller.sendCommand(SpeedCommand, unsafe.Pointer(&_speed))
 }
 func (controller *Controller) Calibrate() error {
+	controller.calibration.Lock()
+	defer controller.calibration.Unlock()
 	controller.Stop()
 	err := controller.calibrateY()
 	if err != nil {
