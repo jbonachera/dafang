@@ -3,6 +3,7 @@ package motor
 import (
 	"fmt"
 	"os"
+	"sync"
 	"time"
 	"unsafe"
 
@@ -53,6 +54,7 @@ func (c *ControllerAxis) Max() int32 {
 }
 
 type Controller struct {
+	sync.Mutex
 	fd         int
 	speed      uint32
 	calibrated time.Time
@@ -113,6 +115,8 @@ func (controller *Controller) Reset() error {
 	return controller.sendCommand(ResetCommand, unsafe.Pointer(nil))
 }
 func (controller *Controller) Up(steps int32) error {
+	controller.Lock()
+	defer controller.Unlock()
 	mov := Movement{
 		Direction: UpDirection,
 		Speed:     controller.speed,
@@ -126,6 +130,9 @@ func (controller *Controller) Up(steps int32) error {
 }
 
 func (controller *Controller) Down(steps int32) error {
+	controller.Lock()
+	defer controller.Unlock()
+
 	mov := Movement{
 		Direction: DownDirection,
 		Speed:     controller.speed,
@@ -139,6 +146,9 @@ func (controller *Controller) Down(steps int32) error {
 }
 
 func (controller *Controller) Right(steps int32) error {
+	controller.Lock()
+	defer controller.Unlock()
+
 	mov := Movement{
 		Direction: RightDirection,
 		Speed:     controller.speed,
@@ -152,6 +162,9 @@ func (controller *Controller) Right(steps int32) error {
 }
 
 func (controller *Controller) Left(steps int32) error {
+	controller.Lock()
+	defer controller.Unlock()
+
 	mov := Movement{
 		Direction: LeftDirection,
 		Speed:     controller.speed,
