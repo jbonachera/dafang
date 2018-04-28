@@ -47,6 +47,11 @@ const InitSpeed = 1000
 type ControllerAxis struct {
 	max int32
 }
+
+func (c *ControllerAxis) Max() int32 {
+	return c.max
+}
+
 type Controller struct {
 	fd         int
 	speed      uint32
